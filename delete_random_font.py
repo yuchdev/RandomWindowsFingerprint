@@ -36,7 +36,7 @@ def main():
     if len(sys.argv) == 2:
         fonts_to_erase = int(sys.argv[1])
     else:
-        fonts_to_erase = random.randint(3, 6)
+        fonts_to_erase = random.randint(3, 12)
 
     delete_random_font(fonts_to_erase)
     return 0
