@@ -11,6 +11,7 @@ logger = log_helper.setup_logger(name="system_fingerpring", level=logging.INFO, 
 
 class WinFingerprint:
     """
+    Windows-related fingerprinting identifiers, like edition, version, build, updates
     """
     EDITIONS = {
         7: [["Starter", "Starter"],

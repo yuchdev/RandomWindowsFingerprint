@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 import logging
 import platform
 import log_helper
@@ -20,7 +21,13 @@ def is_x64os():
     return platform.machine().endswith('64')
 
 
-def randoms_from_lists():
+def generate_network_fingerprint():
+    """
+    Generate network-related identifiers:
+    Hostname (from pre-defined list)
+    Username (from pre-defined list)
+    MAC address (from pre-defined list)
+    """
     random_host = random_utils.random_hostname()
     random_user = random_utils.random_username()
     random_mac = random_utils.random_mac_address()
@@ -29,94 +36,164 @@ def randoms_from_lists():
     logger.info("Random MAC addresses value is {0}".format(random_mac))
 
     hive = "HKEY_LOCAL_MACHINE"
-    registry_helper.write_registry(hive, "SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
-                                   "NV Hostname",
-                                   RegistryKeyType.REG_SZ, random_host)
-    registry_helper.write_registry(hive, "SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
-                                   "Hostname",
-                                   RegistryKeyType.REG_SZ, random_host)
-    registry_helper.write_registry(hive, "SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName",
-                                   "ComputerName",
-                                   RegistryKeyType.REG_SZ, random_host)
-    registry_helper.write_registry(hive, "SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName",
-                                   "ComputerName",
-                                   RegistryKeyType.REG_SZ, random_host)
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
-                                   "RegisteredOwner",
-                                   RegistryKeyType.REG_SZ, random_user, Wow64RegistryEntry.KEY_WOW32_64)
-
-    dir_name = os.path.join(os.path.dirname(__file__), "bin")
-    volume_id = random_utils.random_volume_id()
-    logger.info("VolumeID={0}".format(volume_id))
-    volume_id_path = os.path.join(dir_name, "VolumeID{0}.exe C: {1}".format("64" if is_x64os() else "", volume_id))
-    os.system(volume_id_path)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
+                                value_name="NV Hostname",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=random_host)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
+                                value_name="Hostname",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=random_host)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName",
+                                value_name="ComputerName",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=random_host)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName",
+                                value_name="ComputerName",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=random_host)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+                                value_name="RegisteredOwner",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=random_user,
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
 
 def generate_windows_fingerprint():
+    """
+    Generate common Windows identifiers, responsible for fingerprinting:
+    BuildGUID
+    BuildLab
+    BuildLabEx
+    CurrentBuild
+    CurrentBuildNumber
+    CurrentVersion
+    DigitalProductId
+    DigitalProductId4
+    EditionID
+    InstallDate
+    ProductId
+    ProductName
+    IE SvcKBNumber
+    IE ProductId
+    IE DigitalProductId
+    IE DigitalProductId4
+    IE Installed Date
+    """
     system_fp = win_fingerprint.WinFingerprint()
 
     # Windows fingerprint
     hive = "HKEY_LOCAL_MACHINE"
     version_path = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
 
-    registry_helper.write_registry(hive, version_path, "BuildGUID",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_build_guid(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "BuildLab",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_build_lab(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "BuildLabEx",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_build_lab_ex(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "CurrentBuild",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_current_build(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "CurrentBuildNumber",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_current_build(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "CurrentVersion",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_current_version(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "DigitalProductId",
-                                   RegistryKeyType.REG_BINARY,
-                                   random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
-    registry_helper.write_registry(hive, version_path, "DigitalProductId4",
-                                   RegistryKeyType.REG_BINARY,
-                                   random_utils.bytes_list_to_array(system_fp.random_digital_product_id4()))
-    registry_helper.write_registry(hive, version_path, "EditionID",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_edition_id(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "InstallDate",
-                                   RegistryKeyType.REG_DWORD,
-                                   system_fp.random_install_date())
-    registry_helper.write_registry(hive, version_path, "ProductId",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_product_id(), Wow64RegistryEntry.KEY_WOW32_64)
-    registry_helper.write_registry(hive, version_path, "ProductName",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_product_name(), Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="BuildGUID",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_build_guid(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="BuildLab",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_build_lab(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="BuildLabEx",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_build_lab_ex(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="CurrentBuild",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_current_build(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="CurrentBuildNumber",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_current_build(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="CurrentVersion",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_current_version(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="DigitalProductId",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="DigitalProductId4",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id4()))
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="EditionID",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_edition_id(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="InstallDate",
+                                value_type=RegistryKeyType.REG_DWORD,
+                                key_value=system_fp.random_install_date())
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="ProductId",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_product_id(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path=version_path,
+                                value_name="ProductName",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_product_name(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
     # IE fingerprint
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Internet Explorer", "svcKBNumber",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_ie_service_update(), Wow64RegistryEntry.KEY_WOW32_64)
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Internet Explorer",
+                                value_name="svcKBNumber",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_ie_service_update(),
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Internet Explorer\\Registration", "ProductId",
-                                   RegistryKeyType.REG_SZ,
-                                   system_fp.random_product_id())
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Internet Explorer\\Registration", "DigitalProductId",
-                                   RegistryKeyType.REG_BINARY,
-                                   random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Internet Explorer\\Registration", "DigitalProductId4",
-                                   RegistryKeyType.REG_BINARY,
-                                   random_utils.bytes_list_to_array(system_fp.random_digital_product_id4()))
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
+                                value_name="ProductId",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=system_fp.random_product_id())
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
+                                value_name="DigitalProductId",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
+                                value_name="DigitalProductId4",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id4()))
 
     ie_install_date = system_fp.random_ie_install_date()
     logger.info("IEDate={0}".format(ie_install_date))
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Internet Explorer\\Migration", "IE Installed Date",
-                                   RegistryKeyType.REG_BINARY,
-                                   ie_install_date,
-                                   Wow64RegistryEntry.KEY_WOW32_64)
+
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Migration",
+                                value_name="IE Installed Date",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=ie_install_date,
+                                access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
     logger.info("Random build GUID {0}".format(system_fp.random_build_guid()))
     logger.info("Random BuildLab {0}".format(system_fp.random_build_lab()))
@@ -135,30 +212,49 @@ def generate_windows_fingerprint():
 
 
 def generate_hardware_fingerprint():
+    """
+    Generate hardware-related identifiers:
+    HwProfileGuid
+    MachineGuid
+    Volume ID
+    SusClientId
+    SusClientIDValidation
+    """
+
     hardware_fp = hardware_fingerprint.HardwareFingerprint()
 
     hive = "HKEY_LOCAL_MACHINE"
     # Hardware profile GUID
-    registry_helper.write_registry(hive, "SYSTEM\\CurrentControlSet\\Control\\IDConfigDB\\Hardware Profiles\\0001",
-                                   "HwProfileGuid",
-                                   RegistryKeyType.REG_SZ,
-                                   hardware_fp.random_hw_profile_guid())
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SYSTEM\\CurrentControlSet\\Control\\IDConfigDB\\Hardware Profiles\\0001",
+                                value_name="HwProfileGuid",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=hardware_fp.random_hw_profile_guid())
 
     # Machine GUID
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Cryptography",
-                                   "MachineGuid",
-                                   RegistryKeyType.REG_SZ,
-                                   hardware_fp.random_machine_guid())
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Cryptography",
+                                value_name="MachineGuid",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=hardware_fp.random_machine_guid())
 
     # Windows Update GUID
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
-                                   "SusClientId",
-                                   RegistryKeyType.REG_SZ,
-                                   hardware_fp.random_win_update_guid())
-    registry_helper.write_registry(hive, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
-                                   "SusClientIDValidation",
-                                   RegistryKeyType.REG_BINARY,
-                                   random_utils.bytes_list_to_array(hardware_fp.random_client_id_validation()))
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
+                                value_name="SusClientId",
+                                value_type=RegistryKeyType.REG_SZ,
+                                key_value=hardware_fp.random_win_update_guid())
+    registry_helper.write_value(key_hive=hive,
+                                key_path="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
+                                value_name="SusClientIDValidation",
+                                value_type=RegistryKeyType.REG_BINARY,
+                                key_value=random_utils.bytes_list_to_array(hardware_fp.random_client_id_validation()))
+
+    dir_name = os.path.join(os.path.dirname(__file__), "bin")
+    volume_id = random_utils.random_volume_id()
+    logger.info("VolumeID={0}".format(volume_id))
+    volume_id_path = os.path.join(dir_name, "VolumeID{0}.exe C: {1}".format("64" if is_x64os() else "", volume_id))
+    os.system(volume_id_path)
 
     logger.info("Random Hardware profile GUID {0}".format(hardware_fp.random_hw_profile_guid()))
     logger.info("Random Hardware CKCL GUID {0}".format(hardware_fp.random_performance_guid()))
@@ -172,9 +268,42 @@ def main():
     Generate and change/spoof Windows identification to protect user from local installed software
     :return: Exec return code
     """
-    randoms_from_lists()
-    generate_windows_fingerprint()
-    generate_hardware_fingerprint()
+
+    parser = argparse.ArgumentParser(description='Command-line interface')
+
+    parser.add_argument('--network',
+                        help='Rewrite existing backup file if exist',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
+    parser.add_argument('--system',
+                        help='Rewrite existing backup file if exist',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
+    parser.add_argument('--hardware',
+                        help='Rewrite existing backup file if exist',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
+    args = parser.parse_args()
+
+    # Selected nothing means select all
+    if args.network is False and args.system is False and args.hardware is False:
+        args.network = True
+        args.system = True
+        args.hardware = True
+
+    if args.network:
+        generate_network_fingerprint()
+    if args.system:
+        generate_windows_fingerprint()
+    if args.hardware:
+        generate_hardware_fingerprint()
+
     return 0
 
 
