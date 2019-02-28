@@ -2,7 +2,8 @@ import logging
 import log_helper
 import winreg
 import enum
-import platform
+
+from system_utils import is_x64os
 
 logger = log_helper.setup_logger(name="registry_helper", level=logging.DEBUG, log_to_file=False)
 
@@ -85,6 +86,7 @@ TYPES_MAP = {
     RegistryKeyType.REG_SZ: winreg.REG_SZ
 }
 
+
 class Wow64RegistryEntry(enum.IntEnum):
 
     # Directly access 32-bit Registry entry
@@ -100,15 +102,8 @@ class Wow64RegistryEntry(enum.IntEnum):
 WOW64_MAP = {
     Wow64RegistryEntry.KEY_WOW32: winreg.KEY_WOW64_32KEY,
     Wow64RegistryEntry.KEY_WOW64: winreg.KEY_WOW64_64KEY,
-    Wow64RegistryEntry.KEY_WOW32_64: -1
+    Wow64RegistryEntry.KEY_WOW32_64: 0
 }
-
-
-def is_x64os():
-    """
-    :return: True if system is 64-bit, False otherwise
-    """
-    return platform.machine().endswith('64')
 
 
 def is_key_exist(key_hive, key_path, access_type=Wow64RegistryEntry.KEY_WOW64):

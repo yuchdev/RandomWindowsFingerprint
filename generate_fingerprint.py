@@ -2,7 +2,6 @@ import os
 import sys
 import argparse
 import logging
-import platform
 import log_helper
 import system_fingerprint
 import hardware_fingerprint
@@ -10,15 +9,9 @@ import random_utils
 import registry_helper
 
 from registry_helper import RegistryKeyType, Wow64RegistryEntry
+from system_utils import is_x64os
 
 logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_file=False)
-
-
-def is_x64os():
-    """
-    :return: True if system is 64-bit, False otherwise
-    """
-    return platform.machine().endswith('64')
 
 
 def generate_network_fingerprint():
@@ -36,26 +29,35 @@ def generate_network_fingerprint():
     logger.info("Random MAC addresses value is {0}".format(random_mac))
 
     hive = "HKEY_LOCAL_MACHINE"
+    logger.debug("Tcpip\\Parameters NV Hostname={0}".format(random_host))
     registry_helper.write_value(key_hive=hive,
                                 key_path="SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
                                 value_name="NV Hostname",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=random_host)
+
+    logger.debug("Tcpip\\Parameters Hostname={0}".format(random_host))
     registry_helper.write_value(key_hive=hive,
                                 key_path="SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters",
                                 value_name="Hostname",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=random_host)
+
+    logger.debug("Tcpip\\Parameters ComputerName={0}".format(random_host))
     registry_helper.write_value(key_hive=hive,
                                 key_path="SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName",
                                 value_name="ComputerName",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=random_host)
+
+    logger.debug("ComputerName\\ActiveComputerName ComputerName={0}".format(random_host))
     registry_helper.write_value(key_hive=hive,
                                 key_path="SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName",
                                 value_name="ComputerName",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=random_host)
+
+    logger.debug("Windows NT\\CurrentVersion RegisteredOwner={0}".format(random_user))
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
                                 value_name="RegisteredOwner",
@@ -91,69 +93,92 @@ def generate_windows_fingerprint():
     hive = "HKEY_LOCAL_MACHINE"
     version_path = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
 
+    logger.debug("Windows NT\\CurrentVersion BuildGUID")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="BuildGUID",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_build_guid(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion BuildLab")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="BuildLab",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_build_lab(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion BuildLabEx")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="BuildLabEx",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_build_lab_ex(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion CurrentBuild")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="CurrentBuild",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_current_build(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion CurrentBuildNumber")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="CurrentBuildNumber",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_current_build(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion CurrentVersion")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="CurrentVersion",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_current_version(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion DigitalProductId")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="DigitalProductId",
                                 value_type=RegistryKeyType.REG_BINARY,
                                 key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
+
+    logger.debug("Windows NT\\CurrentVersion DigitalProductId4")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="DigitalProductId4",
                                 value_type=RegistryKeyType.REG_BINARY,
                                 key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id4()))
+
+    logger.debug("Windows NT\\CurrentVersion EditionID")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="EditionID",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_edition_id(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion InstallDate")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="InstallDate",
                                 value_type=RegistryKeyType.REG_DWORD,
                                 key_value=system_fp.random_install_date())
+
+    logger.debug("Windows NT\\CurrentVersion ProductId")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="ProductId",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_product_id(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
+
+    logger.debug("Windows NT\\CurrentVersion ProductName")
     registry_helper.write_value(key_hive=hive,
                                 key_path=version_path,
                                 value_name="ProductName",
@@ -162,6 +187,7 @@ def generate_windows_fingerprint():
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
     # IE fingerprint
+    logger.debug("Microsoft\\Internet Explorer svcKBNumber")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Internet Explorer",
                                 value_name="svcKBNumber",
@@ -169,16 +195,21 @@ def generate_windows_fingerprint():
                                 key_value=system_fp.random_ie_service_update(),
                                 access_type=Wow64RegistryEntry.KEY_WOW32_64)
 
+    logger.debug("Microsoft\\Internet Explorer ProductId")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
                                 value_name="ProductId",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=system_fp.random_product_id())
+
+    logger.debug("Microsoft\\Internet Explorer DigitalProductId")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
                                 value_name="DigitalProductId",
                                 value_type=RegistryKeyType.REG_BINARY,
                                 key_value=random_utils.bytes_list_to_array(system_fp.random_digital_product_id()))
+
+    logger.debug("Internet Explorer\\Registration DigitalProductId")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Registration",
                                 value_name="DigitalProductId4",
@@ -188,6 +219,7 @@ def generate_windows_fingerprint():
     ie_install_date = system_fp.random_ie_install_date()
     logger.info("IEDate={0}".format(ie_install_date))
 
+    logger.debug("Internet Explorer\\Migration IE Installed Date")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Internet Explorer\\Migration",
                                 value_name="IE Installed Date",
@@ -225,6 +257,8 @@ def generate_hardware_fingerprint():
 
     hive = "HKEY_LOCAL_MACHINE"
     # Hardware profile GUID
+
+    logger.debug("Hardware Profiles\\0001 HwProfileGuid")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SYSTEM\\CurrentControlSet\\Control\\IDConfigDB\\Hardware Profiles\\0001",
                                 value_name="HwProfileGuid",
@@ -232,6 +266,7 @@ def generate_hardware_fingerprint():
                                 key_value=hardware_fp.random_hw_profile_guid())
 
     # Machine GUID
+    logger.debug("Microsoft\\Cryptography MachineGuid")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Cryptography",
                                 value_name="MachineGuid",
@@ -239,11 +274,14 @@ def generate_hardware_fingerprint():
                                 key_value=hardware_fp.random_machine_guid())
 
     # Windows Update GUID
+    logger.debug("CurrentVersion\\WindowsUpdate SusClientId")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
                                 value_name="SusClientId",
                                 value_type=RegistryKeyType.REG_SZ,
                                 key_value=hardware_fp.random_win_update_guid())
+
+    logger.debug("CurrentVersion\\WindowsUpdate SusClientIDValidation")
     registry_helper.write_value(key_hive=hive,
                                 key_path="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate",
                                 value_name="SusClientIDValidation",
@@ -272,19 +310,19 @@ def main():
     parser = argparse.ArgumentParser(description='Command-line interface')
 
     parser.add_argument('--network',
-                        help='Rewrite existing backup file if exist',
+                        help='Generate network-related fingerprint',
                         action='store_true',
                         required=False,
                         default=False)
 
     parser.add_argument('--system',
-                        help='Rewrite existing backup file if exist',
+                        help='Generate fingerprint based on system version and identifiers',
                         action='store_true',
                         required=False,
                         default=False)
 
     parser.add_argument('--hardware',
-                        help='Rewrite existing backup file if exist',
+                        help='Generate fingerprint based on hardware identifiers',
                         action='store_true',
                         required=False,
                         default=False)
