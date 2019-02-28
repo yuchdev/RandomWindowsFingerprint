@@ -4,7 +4,7 @@ import argparse
 import logging
 import platform
 import log_helper
-import win_fingerprint
+import system_fingerprint
 import hardware_fingerprint
 import random_utils
 import registry_helper
@@ -85,7 +85,7 @@ def generate_windows_fingerprint():
     IE DigitalProductId4
     IE Installed Date
     """
-    system_fp = win_fingerprint.WinFingerprint()
+    system_fp = system_fingerprint.WinFingerprint()
 
     # Windows fingerprint
     hive = "HKEY_LOCAL_MACHINE"

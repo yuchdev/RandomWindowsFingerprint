@@ -85,7 +85,6 @@ TYPES_MAP = {
     RegistryKeyType.REG_SZ: winreg.REG_SZ
 }
 
-
 class Wow64RegistryEntry(enum.IntEnum):
 
     # Directly access 32-bit Registry entry
@@ -128,8 +127,11 @@ def is_key_exist(key_hive, key_path, access_type=Wow64RegistryEntry.KEY_WOW64):
         wow64_flags = WOW64_MAP[access_type]
         winreg.OpenKey(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_READ))
         return True
-    except WindowsError as _:
-        # TODO: sort out error code
+    except WindowsError as e:
+        # FileNotFound = 2
+        if e.winerror == 2:
+            return False
+        logger.error("is_key_exist {0}\\{1}:LastError={3} [{2}]".format(key_hive, key_path, e.strerror, e.winerror))
         return False
 
 
@@ -229,7 +231,7 @@ def create_value(key_hive, key_path, value_name, value_type, key_value, access_t
     :param key_hive: Windows registry hive to edit, e.g. HKEY_CURRENT_USER
     :param key_path: Path Windows registry key inside the hive, for example "SOFTWARE\Microsoft\Windows"
     :param value_name: Value name to edit
-    :param value_type: Value type, e.g. REG_SZ, REG_DWORD, REG_BINARY...
+    :param value_type: Value type, e.g. REG_SZ, REG_DWORD, REG_BINARY... Could be both RegistryKeyType or winreg type
     :param key_value: Actual value we want to write
     :param access_type:
     :return:
@@ -241,9 +243,12 @@ def create_value(key_hive, key_path, value_name, value_type, key_value, access_t
     wow64_flags = WOW64_MAP[access_type]
     try:
         key_hive_value = HIVES_MAP[key_hive]
-        value_type_value = TYPES_MAP[value_type]
+
+        if isinstance(value_type, RegistryKeyType):
+            value_type = TYPES_MAP[value_type]
+
         registry_key = winreg.OpenKey(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_WRITE))
-        winreg.SetValueEx(registry_key, value_name, 0, value_type_value, key_value)
+        winreg.SetValueEx(registry_key, value_name, 0, value_type, key_value)
         winreg.CloseKey(registry_key)
         return True
     except WindowsError as e:
@@ -273,6 +278,36 @@ def delete_value(key_hive, key_path, value_name, access_type=Wow64RegistryEntry.
         return True
     except WindowsError as e:
         logger.error("Unable to delete registry value {0}:{1} with exception {2}", key_path, value_name, e)
+        return None
+
+
+def read_value(key_hive, key_path, value_name, access_type=Wow64RegistryEntry.KEY_WOW64):
+    """
+    :param key_hive: Windows registry hive to edit, e.g. HKEY_CURRENT_USER
+    :param key_path: Path Windows registry key inside the hive, for example "SOFTWARE\Microsoft\Windows"
+    :param value_name: Value name we want to read
+    :param access_type: Access type for 32/64 bit registry sub-entries in HKLM/SOFTWARE and HKCU/SOFTWARE keys.
+    Exclusively 32/64 bit, or both. Does not affect 32-bit system and in other cases which are not applicable
+    :return: Tuple if succeed, 4 values (2 tuples by 2) if both WOW64_32 and WOW64_64 registry entries requested,
+    2 values otherwise. None if read operation failed
+    """
+    if is_x64os() and access_type == Wow64RegistryEntry.KEY_WOW32_64:
+        value32, regtype32 = read_value(key_hive, key_path, value_name, Wow64RegistryEntry.KEY_WOW32)
+        value64, regtype64 = read_value(key_hive, key_path, value_name, Wow64RegistryEntry.KEY_WOW64)
+        return (value32, regtype32), (value64, regtype64)
+
+    wow64_flags = WOW64_MAP[access_type]
+    registry_key = None
+    try:
+        key_hive_value = HIVES_MAP[key_hive]
+        registry_key = winreg.OpenKey(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_READ))
+        value, regtype = winreg.QueryValueEx(registry_key, value_name)
+        winreg.CloseKey(registry_key)
+        return value, regtype
+    except WindowsError as e:
+        logger.error("Unable to read from registry path {0}:{1} with exception {2}", key_hive, key_path, e)
+        if registry_key is not None:
+            winreg.CloseKey(registry_key)
         return None
 
 
@@ -306,34 +341,3 @@ def write_value(key_hive, key_path, value_name, value_type, key_value, access_ty
         if registry_key is not None:
             winreg.CloseKey(registry_key)
         return False
-
-
-def read_value(key_hive, key_path, value_name, access_type=Wow64RegistryEntry.KEY_WOW64):
-    """
-    :param key_hive: Windows registry hive to edit, e.g. HKEY_CURRENT_USER
-    :param key_path: Path Windows registry key inside the hive, for example "SOFTWARE\Microsoft\Windows"
-    :param value_name: Value name we want to read
-    :param access_type: Access type for 32/64 bit registry sub-entries in HKLM/SOFTWARE and HKCU/SOFTWARE keys.
-    Exclusively 32/64 bit, or both. Does not affect 32-bit system and in other cases which are not applicable
-    :return: Tuple if succeed, 4 values (2 tuples by 2) if both WOW64_32 and WOW64_64 registry entries requested,
-    2 values otherwise. None if read operation failed
-    """
-
-    if is_x64os() and access_type == Wow64RegistryEntry.KEY_WOW32_64:
-        value32, regtype32 = read_value(key_hive, key_path, value_name, Wow64RegistryEntry.KEY_WOW32)
-        value64, regtype64 = read_value(key_hive, key_path, value_name, Wow64RegistryEntry.KEY_WOW64)
-        return (value32, regtype32), (value64, regtype64)
-
-    wow64_flags = WOW64_MAP[access_type]
-    registry_key = None
-    try:
-        key_hive_value = HIVES_MAP[key_hive]
-        registry_key = winreg.OpenKey(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_READ))
-        value, regtype = winreg.QueryValueEx(registry_key, value_name)
-        winreg.CloseKey(registry_key)
-        return value, regtype
-    except WindowsError as e:
-        logger.error("Unable to read from registry path {0}:{1} with exception {2}", key_hive, key_path, e)
-        if registry_key is not None:
-            winreg.CloseKey(registry_key)
-        return None
