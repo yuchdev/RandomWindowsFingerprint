@@ -5,7 +5,7 @@ import enum
 
 from system_utils import is_x64os
 
-logger = log_helper.setup_logger(name="registry_helper", level=logging.DEBUG, log_to_file=False)
+logger = log_helper.setup_logger(name="registry_helper", level=logging.INFO, log_to_file=False)
 
 
 __doc__ = """File contains registry-related functions, for creating, enumerating, editing and removing Windows 

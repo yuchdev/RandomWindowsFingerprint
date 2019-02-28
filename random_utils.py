@@ -9,7 +9,7 @@ import datetime
 import itertools
 import binascii
 
-logger = log_helper.setup_logger(name="random_utils", level=logging.DEBUG, log_to_file=False)
+logger = log_helper.setup_logger(name="random_utils", level=logging.INFO, log_to_file=False)
 
 
 __doc__ = """Service functions for generation random values and sequences with given format.

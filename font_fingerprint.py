@@ -5,7 +5,7 @@ import random
 import registry_helper
 
 
-logger = log_helper.setup_logger(name="font_fp", level=logging.DEBUG, log_to_file=False)
+logger = log_helper.setup_logger(name="font_fp", level=logging.INFO, log_to_file=False)
 
 
 __doc__ = """The script moves N random fonts to the hidden registry key
