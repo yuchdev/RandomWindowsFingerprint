@@ -307,7 +307,7 @@ def main():
     :return: Exec return code
     """
 
-    parser = argparse.ArgumentParser(description='Command-line interface')
+    parser = argparse.ArgumentParser(description='Command-line parameters')
 
     parser.add_argument('--network',
                         help='Generate network-related fingerprint',

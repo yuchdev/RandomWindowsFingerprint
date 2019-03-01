@@ -5,7 +5,7 @@ import enum
 
 from system_utils import is_x64os
 
-logger = log_helper.setup_logger(name="registry_helper", level=logging.INFO, log_to_file=False)
+logger = log_helper.setup_logger(name="registry_helper", level=logging.DEBUG, log_to_file=False)
 
 
 __doc__ = """File contains registry-related functions, for creating, enumerating, editing and removing Windows 
@@ -311,7 +311,7 @@ def write_value(key_hive, key_path, value_name, value_type, key_value, access_ty
     :param key_hive: Windows registry hive to edit, e.g. HKEY_CURRENT_USER
     :param key_path: Path Windows registry key inside the hive, for example "SOFTWARE\Microsoft\Windows"
     :param value_name: Value name to edit
-    :param value_type: Value type, e.g. REG_SZ, REG_DWORD, REG_BINARY...
+    :param value_type: Value type, e.g. REG_SZ, REG_DWORD, REG_BINARY... Could be both RegistryKeyType or winreg type
     :param key_value: Actual value we want to write
     :param access_type: Access type for 32/64 bit registry sub-entries in HKLM/SOFTWARE key.
     Exclusively 32/64 bit, or both. Does not affect 32-bit system and in other cases which are not applicable
@@ -326,9 +326,11 @@ def write_value(key_hive, key_path, value_name, value_type, key_value, access_ty
     wow64_flags = WOW64_MAP[access_type]
     try:
         key_hive_value = HIVES_MAP[key_hive]
-        value_type_value = TYPES_MAP[value_type]
+        if isinstance(value_type, RegistryKeyType):
+            value_type = TYPES_MAP[value_type]
+
         registry_key = winreg.OpenKey(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_WRITE))
-        winreg.SetValueEx(registry_key, value_name, 0, value_type_value, key_value)
+        winreg.SetValueEx(registry_key, value_name, 0, value_type, key_value)
         winreg.CloseKey(registry_key)
         return True
     except WindowsError as e:

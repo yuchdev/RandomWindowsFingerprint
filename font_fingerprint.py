@@ -2,10 +2,11 @@ import sys
 import logging
 import log_helper
 import random
+import argparse
 import registry_helper
 
 
-logger = log_helper.setup_logger(name="font_fp", level=logging.INFO, log_to_file=False)
+logger = log_helper.setup_logger(name="font_fp", level=logging.DEBUG, log_to_file=False)
 
 
 __doc__ = """The script moves N random fonts to the hidden registry key
@@ -23,13 +24,19 @@ class FontFingerprintGenerator:
     HIDDEN_FONTS_KEY = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts\\Hidden"
 
     @staticmethod
+    def create_hidden_key():
+        logger.info("Create key {0}".format(FontFingerprintGenerator.HIDDEN_FONTS_KEY))
+        registry_helper.create_key(key_hive=FontFingerprintGenerator.HIVE,
+                                   key_path=FontFingerprintGenerator.HIDDEN_FONTS_KEY)
+
+    @staticmethod
     def recover_fonts():
         """
         Recover hidden fonts before redistributing to generate new fonts fingerprint
         """
-
-        hidden_fonts = registry_helper.enumerate_key_values(FontFingerprintGenerator.HIVE,
-                                                            FontFingerprintGenerator.HIDDEN_FONTS_KEY)
+        hidden_fonts = registry_helper.enumerate_key_values(key_hive=FontFingerprintGenerator.HIVE,
+                                                            key_path=FontFingerprintGenerator.HIDDEN_FONTS_KEY)
+        # font is tuple (ValueName, ValueData, ValueType)
         for font in hidden_fonts:
             rc = registry_helper.create_value(key_hive=FontFingerprintGenerator.HIVE,
                                               key_path=FontFingerprintGenerator.FONTS_KEY,
@@ -40,9 +47,9 @@ class FontFingerprintGenerator:
             if not rc:
                 continue
             logger.debug("registry_helper.delete_value({0})".format(font))
-            registry_helper.delete_value(FontFingerprintGenerator.HIVE,
-                                         FontFingerprintGenerator.HIDDEN_FONTS_KEY,
-                                         font[0])
+            registry_helper.delete_value(key_hive=FontFingerprintGenerator.HIVE,
+                                         key_path=FontFingerprintGenerator.HIDDEN_FONTS_KEY,
+                                         value_name=font[0])
 
     @staticmethod
     def generate_font_fingerprint(fonts_delete):
@@ -52,19 +59,18 @@ class FontFingerprintGenerator:
         """
         logger.info("Generating fonts fingerprint")
 
-        if not registry_helper.is_key_exist(FontFingerprintGenerator.HIVE,
-                                            FontFingerprintGenerator.HIDDEN_FONTS_KEY):
-            logger.info("Create key {0}".format(FontFingerprintGenerator.HIDDEN_FONTS_KEY))
-            registry_helper.create_key(FontFingerprintGenerator.HIVE,
-                                       FontFingerprintGenerator.HIDDEN_FONTS_KEY)
+        if not registry_helper.is_key_exist(key_hive=FontFingerprintGenerator.HIVE,
+                                            key_path=FontFingerprintGenerator.HIDDEN_FONTS_KEY):
+            FontFingerprintGenerator.create_hidden_key()
         else:
             FontFingerprintGenerator.recover_fonts()
 
-        system_fonts = registry_helper.enumerate_key_values(FontFingerprintGenerator.HIVE,
-                                                            FontFingerprintGenerator.FONTS_KEY)
+        system_fonts = registry_helper.enumerate_key_values(key_hive=FontFingerprintGenerator.HIVE,
+                                                            key_path=FontFingerprintGenerator.FONTS_KEY)
 
         logger.info("Moving fonts to hidden key")
         for _ in range(0, fonts_delete):
+            # delete_font is tuple (ValueName, ValueData, ValueType)
             delete_font = random.choice(system_fonts)
             logger.info("Move font {0}".format(delete_font))
             rc = registry_helper.create_value(key_hive=FontFingerprintGenerator.HIVE,
@@ -76,21 +82,36 @@ class FontFingerprintGenerator:
             if not rc:
                 continue
             logger.debug("registry_helper.delete_value({0})".format(delete_font))
-            registry_helper.delete_value(FontFingerprintGenerator.HIVE,
-                                         FontFingerprintGenerator.FONTS_KEY,
-                                         delete_font[0])
+            registry_helper.delete_value(key_hive=FontFingerprintGenerator.HIVE,
+                                         key_path=FontFingerprintGenerator.FONTS_KEY,
+                                         value_name=delete_font[0])
 
 
 def main():
     """
     :return: Exec return code
     """
-    if len(sys.argv) > 2:
-        print("Usage: font_fingerprint.py <N>")
-        return 0
+    parser = argparse.ArgumentParser(description='Command-line parameters')
+    parser.add_argument('--recover-only',
+                        help='Generate network-related fingerprint',
+                        action='store_true',
+                        required=False,
+                        default=False)
+    parser.add_argument('--fonts-redistribute',
+                        help='Number of fonts to redistribute. '
+                             'Also could be passed as a single argument: font_fingerprint.py N',
+                        dest='fonts_redistribute',
+                        required=False,
+                        default=0)
 
-    if len(sys.argv) == 2:
-        fonts_to_redistribute = int(sys.argv[1])
+    args = parser.parse_args()
+
+    if args.recover_only:
+        FontFingerprintGenerator.recover_fonts()
+        return
+
+    if args.fonts_redistribute > 0:
+        fonts_to_redistribute = args.fonts_redistribute
     else:
         fonts_to_redistribute = random.randint(3, 12)
 
