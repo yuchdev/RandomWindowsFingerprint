@@ -106,6 +106,7 @@ def main():
         return 0
 
     if args.recover_only:
+        logger.info("Recovering hidden fonts to initial system state")
         FontFingerprintGenerator.recover_fonts()
         return
 
