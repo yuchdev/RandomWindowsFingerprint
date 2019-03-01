@@ -5,9 +5,7 @@ import random
 import argparse
 import registry_helper
 
-
 logger = log_helper.setup_logger(name="font_fp", level=logging.DEBUG, log_to_file=False)
-
 
 __doc__ = """The script moves N random fonts to the hidden registry key
 Every next run puts it back, but moves there N other fonts, generating new fingerprint"""
@@ -97,25 +95,26 @@ def main():
                         action='store_true',
                         required=False,
                         default=False)
-    parser.add_argument('--fonts-redistribute',
-                        help='Number of fonts to redistribute. '
-                             'Also could be passed as a single argument: font_fingerprint.py N',
-                        dest='fonts_redistribute',
-                        required=False,
-                        default=0)
+    parser.add_argument(dest='fonts_redistribute', metavar='N', type=int, nargs='?',
+                        help='an integer for the accumulator', default=-1)
 
     args = parser.parse_args()
+
+    if args.recover_only and args.fonts_redistribute != -1:
+        logger.info("Use either number of fonts or other options")
+        parser.print_usage()
+        return 0
 
     if args.recover_only:
         FontFingerprintGenerator.recover_fonts()
         return
 
-    if args.fonts_redistribute > 0:
-        fonts_to_redistribute = args.fonts_redistribute
-    else:
+    fonts_to_redistribute = args.fonts_redistribute
+    if args.fonts_redistribute == -1:
         fonts_to_redistribute = random.randint(3, 12)
+        logger.info("Number of fonts does not set, choose random")
 
-    logger.info("{0} fonts to redistribute".format(fonts_to_redistribute))
+    logger.info("{0} fonts set to redistribute".format(args.fonts_redistribute))
     FontFingerprintGenerator.generate_font_fingerprint(fonts_to_redistribute)
     return 0
 
