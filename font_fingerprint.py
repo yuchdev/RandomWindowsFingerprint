@@ -96,7 +96,7 @@ def main():
                         required=False,
                         default=False)
     parser.add_argument(dest='fonts_redistribute', metavar='N', type=int, nargs='?',
-                        help='an integer for the accumulator', default=-1)
+                        help='Number of fonts to hide for changing fingerprint', default=-1)
 
     args = parser.parse_args()
 
