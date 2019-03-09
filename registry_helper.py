@@ -150,7 +150,8 @@ def enumerate_key_values(key_hive, key_path, access_type=Wow64RegistryEntry.KEY_
             result.append(winreg.EnumValue(registry_key, i))
         return result
     except WindowsError as e:
-        logger.error("Unable to enumerate registry key subkeys {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to enumerate registry key subkeys {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         return None
 
 
@@ -174,7 +175,8 @@ def enumerate_key_subkeys(key_hive, key_path, access_type=Wow64RegistryEntry.KEY
             result.append(winreg.EnumValue(registry_key, i))
         return result
     except WindowsError as e:
-        logger.error("Unable to enumerate registry key values {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to enumerate registry key values {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         return None
 
 
@@ -195,7 +197,8 @@ def create_key(key_hive, key_path, access_type=Wow64RegistryEntry.KEY_WOW64):
         registry_key = winreg.CreateKeyEx(key_hive_value, key_path, 0, (wow64_flags | winreg.KEY_WRITE))
         return registry_key
     except WindowsError as e:
-        logger.error("Unable to create registry key {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to create registry key {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         return None
 
 
@@ -216,7 +219,8 @@ def delete_key(key_hive, key_path, access_type=Wow64RegistryEntry.KEY_WOW64):
         winreg.DeleteKeyEx(key_hive_value, key_path, (wow64_flags | winreg.KEY_WRITE), 0)
         return True
     except WindowsError as e:
-        logger.error("Unable to delete registry key {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to delete registry key {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         return None
 
 
@@ -247,7 +251,8 @@ def create_value(key_hive, key_path, value_name, value_type, key_value, access_t
         winreg.CloseKey(registry_key)
         return True
     except WindowsError as e:
-        logger.error("Unable to write to registry path {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to write to registry path {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         if registry_key is not None:
             winreg.CloseKey(registry_key)
         return False
@@ -272,7 +277,8 @@ def delete_value(key_hive, key_path, value_name, access_type=Wow64RegistryEntry.
         winreg.DeleteValue(registry_key, value_name)
         return True
     except WindowsError as e:
-        logger.error("Unable to delete registry value {0}:{1} with exception {2}", key_path, value_name, e)
+        logger.error("Unable to delete registry value {0}:{1} with exception {2}",
+                     key_path, value_name, e.strerror)
         return None
 
 
@@ -300,7 +306,8 @@ def read_value(key_hive, key_path, value_name, access_type=Wow64RegistryEntry.KE
         winreg.CloseKey(registry_key)
         return value, regtype
     except WindowsError as e:
-        logger.error("Unable to read from registry path {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to read from registry path {0}:{1} with exception {2}",
+                     key_hive, key_path, e.strerror)
         if registry_key is not None:
             winreg.CloseKey(registry_key)
         return None
@@ -334,7 +341,7 @@ def write_value(key_hive, key_path, value_name, value_type, key_value, access_ty
         winreg.CloseKey(registry_key)
         return True
     except WindowsError as e:
-        logger.error("Unable to write to registry path {0}:{1} with exception {2}", key_hive, key_path, e)
+        logger.error("Unable to write to registry path {0}:{1} with exception {2}", key_hive, key_path, e.strerror)
         if registry_key is not None:
             winreg.CloseKey(registry_key)
         return False
