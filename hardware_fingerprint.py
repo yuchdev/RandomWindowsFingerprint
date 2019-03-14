@@ -1,11 +1,7 @@
-import logging
-import log_helper
 import random
 import uuid
 import string
 import random_utils
-
-logger = log_helper.setup_logger(name="hardware_fingerpring", level=logging.INFO, log_to_file=False)
 
 
 class HardwareFingerprint:

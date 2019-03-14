@@ -5,6 +5,7 @@ import logging
 import log_helper
 import system_fingerprint
 import hardware_fingerprint
+import telemetry_fingerprint
 import random_utils
 import registry_helper
 
@@ -12,6 +13,15 @@ from registry_helper import RegistryKeyType, Wow64RegistryEntry
 from system_utils import is_x64os
 
 logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_file=False)
+
+
+def generate_telemetry_fingerprint():
+    """
+    IDs related to Windows 10 Telemetry
+    """
+    telemetry_fp = telemetry_fingerprint.TelemetryFingerprint()
+    device_id = telemetry_fp.random_device_id_guid()
+    logger.info("Windows 10 Telemetry DeviceID is {0}".format(device_id))
 
 
 def generate_network_fingerprint():
@@ -309,6 +319,12 @@ def main():
 
     parser = argparse.ArgumentParser(description='Command-line parameters')
 
+    parser.add_argument('--telemetry',
+                        help='Generate Windows 10 Telemetry IDs',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
     parser.add_argument('--network',
                         help='Generate network-related fingerprint',
                         action='store_true',
@@ -330,11 +346,13 @@ def main():
     args = parser.parse_args()
 
     # Selected nothing means select all
-    if args.network is False and args.system is False and args.hardware is False:
+    if args.telemetry is False and args.network is False and args.system is False and args.hardware is False:
         args.network = True
         args.system = True
         args.hardware = True
 
+    if args.telemetry:
+        generate_telemetry_fingerprint()
     if args.network:
         generate_network_fingerprint()
     if args.system:
