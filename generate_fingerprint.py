@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import logging
+import winreg
 import log_helper
 import system_fingerprint
 import hardware_fingerprint
@@ -27,7 +28,12 @@ def generate_telemetry_fingerprint():
         key_hive="HKEY_LOCAL_MACHINE",
         key_path="SOFTWARE\\Microsoft\\SQMClient",
         value_name="MachineId")
-    logger.info("Current Windows 10 Telemetry DeviceID is {0}".format(current_device_id))
+    if current_device_id[1] == winreg.REG_SZ:
+        logger.info("Current Windows 10 Telemetry DeviceID is {0}".format(current_device_id[0]))
+    else:
+        logger.warning("Unexpected type of HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\SQMClient Value:MachineId Type:%d" %
+                       current_device_id[1])
+        return
 
     telemetry_fp = telemetry_fingerprint.TelemetryFingerprint()
     device_id = telemetry_fp.random_device_id_guid()
