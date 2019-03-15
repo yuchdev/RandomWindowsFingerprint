@@ -61,7 +61,7 @@ def generate_telemetry_fingerprint():
             return
 
         query_string = query_params[0]
-        new_query_string = query_string.replace(current_device_id, device_id)
+        new_query_string = query_string.replace(current_device_id[0], device_id)
         registry_helper.write_value(key_hive="HKEY_LOCAL_MACHINE",
                                     key_path="%s\\%s" % (query_path, request),
                                     value_name="ETagQueryParameters",
