@@ -6,7 +6,7 @@ class TelemetryFingerprint:
     Windows 10 telemetry IDs
     """
     def __init__(self):
-        self.device_id_guid = ("{%s}" % str(uuid.uuid4()))
+        self.device_id_guid = str(uuid.uuid4()).upper()
 
     def random_device_id_guid(self):
         """
