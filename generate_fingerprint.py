@@ -13,7 +13,7 @@ import registry_helper
 from registry_helper import RegistryKeyType, Wow64RegistryEntry
 from system_utils import is_x64os
 
-logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_file=False)
+logger = log_helper.setup_logger(name="antidetect", level=logging.DEBUG, log_to_file=False)
 
 
 def generate_telemetry_fingerprint2():
@@ -46,6 +46,21 @@ def generate_telemetry_fingerprint2():
                                 key_value=device_id)
 
 
+def generate_telemetry_fingerprint():
+    """
+    Replace DeviceID in HTTP query as one of params
+    """
+    hive = "HKEY_LOCAL_MACHINE"
+    query_path = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Diagnostics\\DiagTrack\\SettingsRequests"
+    setting_requests = registry_helper.enumerate_key_subkeys(key_hive=hive,
+                                                             key_path=query_path)
+    logger.debug("SettingsRequest subkeys: {0}".format(setting_requests))
+
+    for request in setting_requests:
+        query_params = registry_helper.read_value(key_hive=hive,
+                                                  key_path="%s\\%s" % (query_path, request),
+                                                  value_name="ETagQueryParameters")
+        logger.debug("Request: {0}; QueryParams: {1}".format(request, query_params))
 
 
 def generate_network_fingerprint():
