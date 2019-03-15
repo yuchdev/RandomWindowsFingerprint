@@ -16,7 +16,7 @@ from system_utils import is_x64os
 logger = log_helper.setup_logger(name="antidetect", level=logging.DEBUG, log_to_file=False)
 
 
-def generate_telemetry_fingerprint2():
+def generate_telemetry_fingerprint():
     """
     IDs related to Windows 10 Telemetry
     All the telemetry is getting around the DeviceID registry value
