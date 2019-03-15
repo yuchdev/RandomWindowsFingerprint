@@ -16,7 +16,7 @@ from system_utils import is_x64os
 logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_file=False)
 
 
-def generate_telemetry_fingerprint():
+def generate_telemetry_fingerprint2():
     """
     IDs related to Windows 10 Telemetry
     All the telemetry is getting around the DeviceID registry value
@@ -38,6 +38,14 @@ def generate_telemetry_fingerprint():
     telemetry_fp = telemetry_fingerprint.TelemetryFingerprint()
     device_id = telemetry_fp.random_device_id_guid()
     logger.info("Windows 10 Telemetry DeviceID is {0}".format(device_id))
+
+    registry_helper.write_value(key_hive="HKEY_LOCAL_MACHINE",
+                                key_path="SOFTWARE\\Microsoft\\SQMClient",
+                                value_name="MachineId",
+                                value_type=winreg.REG_SZ,
+                                key_value=device_id)
+
+
 
 
 def generate_network_fingerprint():
