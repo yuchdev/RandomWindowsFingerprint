@@ -11,9 +11,9 @@ import random_utils
 import registry_helper
 
 from registry_helper import RegistryKeyType, Wow64RegistryEntry
-from system_utils import is_x64os
+from system_utils import is_x64os, platform_version
 
-logger = log_helper.setup_logger(name="antidetect", level=logging.DEBUG, log_to_file=False)
+logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_file=False)
 
 
 def generate_telemetry_fingerprint():
@@ -24,6 +24,11 @@ def generate_telemetry_fingerprint():
     HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient
     HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests
     """
+    windows_ver = platform_version()
+    if not windows_ver.startswith("Windows-10"):
+        logger.warning("Telemetry ID replace available for Windows 10 only")
+        return
+
     current_device_id = registry_helper.read_value(
         key_hive="HKEY_LOCAL_MACHINE",
         key_path="SOFTWARE\\Microsoft\\SQMClient",
