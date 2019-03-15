@@ -1,6 +1,6 @@
 import uuid
 
-__doc__ = """All the telemetry is getting arount the DeviceID registry value
+__doc__ = """All the telemetry is getting around the DeviceID registry value
 It can be found in the following kays:
 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient
 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests

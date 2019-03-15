@@ -18,10 +18,20 @@ logger = log_helper.setup_logger(name="antidetect", level=logging.INFO, log_to_f
 def generate_telemetry_fingerprint():
     """
     IDs related to Windows 10 Telemetry
+    All the telemetry is getting around the DeviceID registry value
+    It can be found in the following kays:
+    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient
+    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests
     """
     telemetry_fp = telemetry_fingerprint.TelemetryFingerprint()
     device_id = telemetry_fp.random_device_id_guid()
     logger.info("Windows 10 Telemetry DeviceID is {0}".format(device_id))
+    hive = "HKEY_LOCAL_MACHINE"
+    current_device_id = registry_helper.read_value(
+        key_hive=hive,
+        key_path="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient",
+        value_name="MachineId")
+    logger.info("Current Windows 10 Telemetry DeviceID is {0}".format())
 
 
 def generate_network_fingerprint():
