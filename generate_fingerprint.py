@@ -37,30 +37,32 @@ def generate_telemetry_fingerprint2():
 
     telemetry_fp = telemetry_fingerprint.TelemetryFingerprint()
     device_id = telemetry_fp.random_device_id_guid()
-    logger.info("Windows 10 Telemetry DeviceID is {0}".format(device_id))
+    device_id_brackets = "{%s}" % telemetry_fp.random_device_id_guid()
+    logger.info("New Windows 10 Telemetry DeviceID is {0}".format(device_id_brackets))
 
     registry_helper.write_value(key_hive="HKEY_LOCAL_MACHINE",
                                 key_path="SOFTWARE\\Microsoft\\SQMClient",
                                 value_name="MachineId",
                                 value_type=winreg.REG_SZ,
-                                key_value=device_id)
+                                key_value=device_id_brackets)
 
-
-def generate_telemetry_fingerprint():
-    """
-    Replace DeviceID in HTTP query as one of params
-    """
-    hive = "HKEY_LOCAL_MACHINE"
+    # Replace queries
     query_path = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Diagnostics\\DiagTrack\\SettingsRequests"
-    setting_requests = registry_helper.enumerate_key_subkeys(key_hive=hive,
+    setting_requests = registry_helper.enumerate_key_subkeys(key_hive="HKEY_LOCAL_MACHINE",
                                                              key_path=query_path)
     logger.debug("SettingsRequest subkeys: {0}".format(setting_requests))
 
     for request in setting_requests:
-        query_params = registry_helper.read_value(key_hive=hive,
+        query_params = registry_helper.read_value(key_hive="HKEY_LOCAL_MACHINE",
                                                   key_path="%s\\%s" % (query_path, request),
                                                   value_name="ETagQueryParameters")
-        logger.debug("Request: {0}; QueryParams: {1}".format(request, query_params))
+        if query_params[1] != winreg.REG_SZ:
+            logger.warning("Unexpected type of %s\\%s Value:MachineId Type:%d" % (query_path, request, query_params[1]))
+            return
+
+        query_string = query_params[0]
+        query_string.replace(current_device_id, device_id)
+    logger.debug("DeviceID has been replaced from %s to %s" % (current_device_id, device_id))
 
 
 def generate_network_fingerprint():
