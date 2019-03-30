@@ -112,7 +112,7 @@ def main():
 
     fonts_to_redistribute = args.fonts_redistribute
     if args.fonts_redistribute == -1:
-        fonts_to_redistribute = random.randint(3, 12)
+        fonts_to_redistribute = random.randint(1, 3)
         logger.info("Number of fonts does not set, choose random")
 
     logger.info("{0} fonts set to redistribute".format(args.fonts_redistribute))

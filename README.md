@@ -2,6 +2,8 @@
 
 Change Windows and hardware identifiers so that change system fingerprint
 
+WARNING! This prototype does not back up your system initial state (except Font Fingerprint), test it in the virtual machine not to damage your host system
+
 List of changed identificators:
 
 * Username

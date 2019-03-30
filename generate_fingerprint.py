@@ -3,12 +3,15 @@ import sys
 import argparse
 import logging
 import winreg
+import random
 import log_helper
 import system_fingerprint
 import hardware_fingerprint
 import telemetry_fingerprint
+import font_fingerprint
 import random_utils
 import registry_helper
+
 
 from registry_helper import RegistryKeyType, Wow64RegistryEntry
 from system_utils import is_x64os, platform_version
@@ -21,8 +24,8 @@ def generate_telemetry_fingerprint():
     IDs related to Windows 10 Telemetry
     All the telemetry is getting around the DeviceID registry value
     It can be found in the following kays:
-    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient
-    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests
+    HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\SQMClient
+    HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Diagnostics\\DiagTrack\\SettingsRequests
     """
     windows_ver = platform_version()
     if not windows_ver.startswith("Windows-10"):
@@ -363,6 +366,12 @@ def generate_hardware_fingerprint():
     logger.debug("Random Windows Update Validation ID {0}".format(hardware_fp.random_win_update_guid()))
 
 
+def generate_font_fingerprint():
+    fonts_to_redistribute = random.randint(1, 3)
+    logger.info("{0} fonts set to redistribute".format(fonts_to_redistribute))
+    font_fingerprint.FontFingerprintGenerator.generate_font_fingerprint(fonts_to_redistribute)
+
+
 def main():
     """
     Generate and change/spoof Windows identification to protect user from local installed software
@@ -395,14 +404,24 @@ def main():
                         required=False,
                         default=False)
 
+    parser.add_argument('--fonts',
+                        help='Generate fonts fingerprint by redistributing system fonts',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
     args = parser.parse_args()
 
     # Selected nothing means select all
-    if args.telemetry is False and args.network is False and args.system is False and args.hardware is False:
+    if args.telemetry == args.network == args.system == args.hardware == False:
         args.network = True
         args.system = True
         args.hardware = True
+        args.telemetry = True
+        args.fonts = True
 
+    if args.fonts:
+        generate_font_fingerprint()
     if args.telemetry:
         generate_telemetry_fingerprint()
     if args.network:
