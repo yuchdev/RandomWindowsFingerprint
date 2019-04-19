@@ -69,4 +69,5 @@ class HardwareFingerprint:
         system_client_id.extend([0, 6, 0])
         system_client_id.extend(HardwareFingerprint.__random_id2())
         system_client_id.extend(random_utils.disperse_string("None"))
+        system_client_id.extend([0x20, 0x00])
         return system_client_id
