@@ -11,7 +11,7 @@ from test_type import TestType
 from validation_type import ValidationType
 
 
-logger = log_helper.setup_logger(name="antidetect", level=logging.DEBUG, log_to_file=False)
+logger = log_helper.setup_logger(name="fingerprint_test", level=logging.DEBUG, log_to_file=False)
 
 
 class ApplicationType(enum.IntEnum):
@@ -220,7 +220,7 @@ def generic_test(test_type, application_type):
 
     assert type(application_type) is ApplicationType, "application_type should be Enum.ApplicationType"
 
-    logger.info("Run generic test test_type=%d, application_type=%d")
+    logger.info("Run generic test test_type={}, application_type={}".format(test_type, application_type))
 
     registry_config = get_registry_config()
     to_change = []
