@@ -181,7 +181,7 @@ class WinFingerprint:
         return "{0}-{1}-{2}-{3}".format(self.pid1, self.pid2, self.pid3, self.pid4)
 
     def __random_digital_product_id(self):
-        random_digital_id = random.sample(range(0, 255), k=164)
+        random_digital_id = [0] * 164
         random_digital_id[0x00:0x07] = [0xA4, 0, 0, 0, 0x3, 0, 0, 0]
         random_digital_id[0x08:0x19] = list(self.product_id)
         random_digital_id[0xA0:0xA3] = [0xB9, 0xEC, 0x21, 0x73]
