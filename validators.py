@@ -1,4 +1,3 @@
-from uuid import UUID
 import re
 import time
 

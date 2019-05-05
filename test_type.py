@@ -1,6 +1,5 @@
 import enum
 
-
 class TestType(enum.IntEnum):
     telemetry_fingerprint = 0
     network_fingerprint = 1

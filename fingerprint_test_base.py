@@ -225,8 +225,10 @@ def generic_test(test_type, application_type):
     registry_config = get_registry_config()
     to_change = []
     to_preserve = []
+    to_not_exist = []
     for record in registry_config:
-        if record.initial_value is None:
+        if record.initial_value is None: 
+            to_not_exist.append(record)
             continue
         if record.type == test_type:
             record.corrupt()
@@ -247,6 +249,9 @@ def generic_test(test_type, application_type):
 
     for record in to_preserve:
         record.should_not_change()
+
+    for record in to_not_exist:
+        assert record.read is None
 
     logger.info("Test was successful: " + str(test_type))
 
