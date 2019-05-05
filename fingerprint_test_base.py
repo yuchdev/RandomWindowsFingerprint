@@ -220,6 +220,8 @@ def generic_test(test_type, application_type):
 
     assert type(application_type) is ApplicationType, "application_type should be Enum.ApplicationType"
 
+    logger.info("Run generic test test_type=%d, application_type=%d")
+
     registry_config = get_registry_config()
     to_change = []
     to_preserve = []
@@ -293,7 +295,7 @@ def main():
         logger.warning("Choose either --prototype or --production, --prototype is default")
 
     for test_type in args.test_type:
-        generic_test(test_type, application_type)
+        generic_test(TEST_TYPE_MAP[test_type], application_type)
 
     return 0
 
