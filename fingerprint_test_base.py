@@ -237,7 +237,7 @@ def generic_test(test_type, application_type):
     elif application_type == ApplicationType.APP_PRODUCTION:
         generate_production_fingerprint(test_type)
     else:
-        logger.WARNING("generic_test(test_type, application_type): application_type is out of range")
+        logger.warning("generic_test(test_type, application_type): application_type is out of range")
 
     for record in to_change:
         record.should_change()
@@ -280,15 +280,17 @@ def main():
     args = parser.parse_args()
 
     if args.prototype and args.production:
-        logger.WARNING("Choose either --prototype or --production")
+        logger.warning("Choose either --prototype or --production")
         return 0
 
     if args.prototype:
+        logger.info("Use prototype application")
         application_type = ApplicationType.APP_PROTOTYPE
     elif args.production:
+        logger.info("Use production application")
         application_type = ApplicationType.APP_PRODUCTION
     else:
-        logger.WARNING("Choose either --prototype or --production, --prototype is default")
+        logger.warning("Choose either --prototype or --production, --prototype is default")
 
     for test_type in args.test_type:
         generic_test(test_type, application_type)
