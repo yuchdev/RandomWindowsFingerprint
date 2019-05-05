@@ -12,7 +12,6 @@ import font_fingerprint
 import random_utils
 import registry_helper
 
-
 from registry_helper import RegistryKeyType, Wow64RegistryEntry
 from system_utils import is_x64os, platform_version
 
@@ -413,7 +412,7 @@ def main():
     args = parser.parse_args()
 
     # Selected nothing means select all
-    if args.telemetry == args.network == args.system == args.hardware == False:
+    if (args.telemetry and args.network and args.system and args.hardware) is False:
         args.network = True
         args.system = True
         args.hardware = True
