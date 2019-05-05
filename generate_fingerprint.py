@@ -412,7 +412,7 @@ def main():
     args = parser.parse_args()
 
     # Selected nothing means select all
-    if (args.telemetry and args.network and args.system and args.hardware) is False:
+    if (args.telemetry or args.network or args.system or args.hardware) is False:
         args.network = True
         args.system = True
         args.hardware = True
