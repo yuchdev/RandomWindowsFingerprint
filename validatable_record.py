@@ -2,6 +2,7 @@ import winreg
 import registry_helper
 import validation_type
 import validators
+from soft_assert import SoftAssert
 
 class ValidatableRecord:
     def __init__(self, path, name, type = None, validation_format = validation_type.ValidationType.none):
@@ -48,79 +49,63 @@ class ValidatableRecord:
 
 
     def should_change(self):
-        assert self.initial_value != self.read(), \
-            "Expected " + self.path + " / " + self.name + \
-            " to change from " + self.initial_value
+        SoftAssert.are_not_euqal(self.read(), self.initial_value, self.path + " / " + self.name)
 
 
     def should_not_change(self):
-        assert self.initial_value == self.read(), \
-            "Expected " + self.path + " / " + self.name + \
-            "\nto be: " + self.initial_value + \
-            "\nnot:   " + self.read()
+        SoftAssert.are_euqal(self.read(), self.initial_value, self.path + " / " + self.name)
+
+
+    def should_not_exist(self):
+        should_be_none = self.read()
+        SoftAssert.is_true(should_be_none is None, should_be_none)
 
 
     def validate_format(self):
         if self.validation_format == validation_type.ValidationType.product_id: 
-            assert validators.validate_product_id(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_product_id(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.unix_time: 
-            assert validators.validate_unix_time(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_unix_time(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.digital_product_id: 
-            assert validators.validate_digital_product_id(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_digital_product_id(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.digital_product_id4: 
-            assert validators.validate_digital_product_id4(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_digital_product_id4(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.build_lab: 
-            assert validators.validate_build_lab(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_build_lab(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.build_lab_ex: 
-            assert validators.validate_build_lab_ex(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_build_lab_ex(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.current_build: 
-            assert validators.validate_current_build(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_current_build(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.uuid: 
-            assert validators.validate_uuid(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_uuid(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.curl_uuid: 
-            assert validators.validate_curl_uuid(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_curl_uuid(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.current_version: 
-            assert validators.validate_current_version(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_current_version(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.edition_id: 
-            assert validators.validate_edition_id(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_edition_id(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.product_name: 
-            assert validators.validate_product_name(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_product_name(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.svc_kb_number: 
-            assert validators.validate_svc_kb_number(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_svc_kb_number(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.host_name: 
-            assert validators.validate_host_name(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_host_name(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.sus_client_id_validation: 
-            assert validators.validate_sus_client_id_validation(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_sus_client_id_validation(self.read(), self.path + "/" + self.name)
         
         if self.validation_format == validation_type.ValidationType.ie_installed_date: 
-            assert validators.validate_ie_installed_date(self.read()), \
-                "Invalid format " + str(self.validation_format) + " for " + self.name + ": " + self.read()
+            validators.validate_ie_installed_date(self.read(), self.path + "/" + self.name)
