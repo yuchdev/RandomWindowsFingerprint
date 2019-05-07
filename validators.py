@@ -8,9 +8,9 @@ def validate_uuid(to_validate, message):
     
 
 def validate_curl_uuid(uuid_string, message):
-    validate_uuid(uuid_string[1:-1], message)
     SoftAssert.are_euqal(uuid_string[0], "{", message)
     SoftAssert.are_euqal(uuid_string[-1], "}", message)
+    validate_uuid(uuid_string[1:-1], message)
     
 
 def validate_product_id(to_validate, message):
@@ -52,8 +52,11 @@ def validate_edition_id(to_validate, message):
 
 
 def validate_product_name(to_validate, message):
+    split = to_validate.split(" ")
+    name = " ".join([split[0], split[1]])
     ListProductName = ["Windows 7", "Windows 8.1", "Windows 10"]
-    SoftAssert.is_in_list(to_validate, ListProductName, message)
+    SoftAssert.is_in_list(name, ListProductName, message)
+    validate_edition_id(split[2], message)
 
 
 def validate_svc_kb_number(to_validate, message):
