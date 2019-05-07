@@ -7,6 +7,7 @@ import log_helper
 import validatable_record
 import generate_fingerprint as gen
 
+from soft_assert import SoftAssert
 from test_type import TestType
 from validation_type import ValidationType
 
@@ -251,9 +252,9 @@ def generic_test(test_type, application_type):
         record.should_not_change()
 
     for record in to_not_exist:
-        assert record.read is None
+        record.should_not_exist()
 
-    logger.info("Test was successful: " + str(test_type))
+    SoftAssert.resolve("Test was successful: " + str(test_type))
 
 
 def main():
