@@ -224,6 +224,7 @@ def generic_test(test_type, application_type):
         for record in get_registry_config():
             if record.initial_value is not None:
                 record.validate_format()
+        SoftAssert.resolve("Proof check was successful")
         return
  
 
