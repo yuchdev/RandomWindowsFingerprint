@@ -18,6 +18,7 @@ logger = log_helper.setup_logger(name="fingerprint_test", level=logging.DEBUG, l
 class ApplicationType(enum.IntEnum):
     APP_PROTOTYPE = 0
     APP_PRODUCTION = 1
+    APP_PROOF = 2
 
 
 TEST_TYPE_MAP = {
@@ -219,6 +220,13 @@ def generate_production_fingerprint(test_type):
 
 def generic_test(test_type, application_type):
 
+    if application_type == ApplicationType.APP_PROOF:
+        for record in get_registry_config():
+            if record.initial_value is not None:
+                record.validate_format()
+        return
+ 
+
     assert type(application_type) is ApplicationType, "application_type should be Enum.ApplicationType"
 
     logger.info("Run generic test test_type={}, application_type={}".format(test_type, application_type))
@@ -277,6 +285,12 @@ def main():
                         required=False,
                         default=False)
 
+    parser.add_argument('--proof',
+                        help='Validate existing registry values',
+                        action='store_true',
+                        required=False,
+                        default=False)
+
     parser.add_argument('--test-type',
                         help='List of test types to run',
                         nargs='+',
@@ -297,6 +311,9 @@ def main():
     elif args.production:
         logger.info("Use production application")
         application_type = ApplicationType.APP_PRODUCTION
+    elif args.proof:
+        logger.info("Just check existing values")
+        application_type = ApplicationType.APP_PROOF
     else:
         logger.warning("Choose either --prototype or --production, --prototype is default")
 
