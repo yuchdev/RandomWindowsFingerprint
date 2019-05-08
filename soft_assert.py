@@ -12,6 +12,7 @@ class SoftAssert:
             print(default_message)
         SoftAssert.message = ""
 
+
     @staticmethod
     def are_euqal(actual, expected, message = "====="):
         if actual != expected:
@@ -22,6 +23,7 @@ class SoftAssert:
     def are_not_euqal(actual, expected, message = "====="):
         if actual == expected:
             SoftAssert.message += "\n=====\n" + str(actual) + "\n" + str(expected) + "\nexpected not to be equal\n" + str(message) + "\n====="
+
 
     @staticmethod
     def is_true(statement, message = "====="):
@@ -39,9 +41,3 @@ class SoftAssert:
     def is_in_list(actual, list_of_values, message = "====="):
         if not actual in list_of_values:
             SoftAssert.message += "\n=====\n" + str(actual) + "\n" + str(list_of_values) + "\nexpected to be in the list\n" + str(message) + "\n====="
-
-
-    @staticmethod
-    def is_binary_equal(actual, expected, message = "====="):
-        if actual ^ expected:
-            SoftAssert.message += "\n=====\n" + str(actual) + "\n" + str(expected) + "\nexpected to be equal\n" + str(message) + "\n====="
